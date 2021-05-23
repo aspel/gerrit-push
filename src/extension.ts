@@ -1,24 +1,4 @@
 import * as vscode from 'vscode';
-import * as cp from "child_process";
-
-
-const execShell = (cmd: string) =>
-    new Promise<string>((resolve, reject) => {
-        cp.exec(cmd, (err, out) => {
-            if (err) {
-                console.log(`Found an error: ${err}`)
-                return reject(err);
-            }
-            return resolve(out);
-        });
-    });
-
-async function showInputBox() {
-    const remote_branch = await vscode.window.showInputBox({
-        value: 'master',
-        placeHolder: 'remote branch',
-    });
-}
 
 async function gitAPI(val: string, push_branch="") {
     const gitExtension = vscode.extensions.getExtension('vscode.git')
