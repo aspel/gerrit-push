@@ -2,6 +2,12 @@
   "name": "gerrit-push",
   "displayName": "Gerrit Push",
   "description": "",
+  "publisher": "aspel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aspel/gerrit-push.git"
+  },
+  "license": "MIT",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.56.0"
