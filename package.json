@@ -1,6 +1,6 @@
 {
-  "name": "ss",
-  "displayName": "ss",
+  "name": "gerrit-push",
+  "displayName": "Gerrit Push",
   "description": "",
   "version": "0.0.1",
   "engines": {
@@ -10,13 +10,13 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:ss.helloWorld"
+    "onCommand:gerrit.push"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "ss.helloWorld",
+        "command": "gerrit.push",
         "title": "Gerrit Push"
       }
     ]

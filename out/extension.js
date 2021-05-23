@@ -27,28 +27,31 @@ function showInputBox() {
             value: 'master',
             placeHolder: 'remote branch',
         });
-        const result = yield execShell(`git push origin HEAD:refs/for/${remote_branch}`);
-        vscode.window.showInformationMessage(`Commit pushed to HEAD:refs/for/${result}`);
     });
 }
-function getAllBranches() {
+function gitAPI(val, push_branch = "") {
     return __awaiter(this, void 0, void 0, function* () {
         const gitExtension = vscode.extensions.getExtension('vscode.git');
         const git = gitExtension === null || gitExtension === void 0 ? void 0 : gitExtension.exports;
         const api = git.getAPI(1);
         const repo = api.repositories[0];
-        const head = repo;
-        // Get the branch and commit 
-        const { commit, name: branch } = head;
-        // Get head of any other branch
-        console.log(`FOO ${branch}`);
-        return branch;
+        if (val == "branch") {
+            const branch = yield repo.getBranches("origin");
+            return branch;
+        }
+        else if (val == "push") {
+            yield repo.push("origin", `HEAD:refs/for/${push_branch}`);
+        }
     });
 }
 function qp() {
     return __awaiter(this, void 0, void 0, function* () {
-        const fruits = getAllBranches();
-        const code = yield getCode(fruits);
+        const branchRaw = yield gitAPI("branch");
+        const branch = [];
+        branchRaw.forEach(function (value) {
+            branch.push(value['name']);
+        });
+        const code = yield getCode(branch);
     });
 }
 function getCode(codes) {
@@ -57,11 +60,13 @@ function getCode(codes) {
         quickPick.placeholder = 'Select (or create) a code.';
         quickPick.canSelectMany = false;
         quickPick.items = codes.map((label) => ({ label }));
-        quickPick.onDidAccept(() => {
+        quickPick.onDidAccept(() => __awaiter(this, void 0, void 0, function* () {
             const selection = quickPick.activeItems[0];
             resolve(selection.label);
+            yield gitAPI("push", selection.label);
+            vscode.window.showInformationMessage(`Commit pushed to HEAD:refs/for/${selection.label}`);
             quickPick.hide();
-        });
+        }));
         quickPick.onDidChangeValue(() => {
             // add a new code to the pick list as the first item
             if (!codes.includes(quickPick.value)) {
@@ -74,7 +79,7 @@ function getCode(codes) {
     });
 }
 function activate(context) {
-    let disposable = vscode.commands.registerCommand('ss.helloWorld', qp);
+    let disposable = vscode.commands.registerCommand('gerrit.push', qp);
     context.subscriptions.push(disposable);
 }
 exports.activate = activate;
