@@ -1,20 +1,32 @@
 import * as vscode from 'vscode';
 
-async function gitAPI(val: string, push_branch="") {
+async function gitAPI(val: string, push_branch: string = "", id: number = 0) {
     const gitExtension = vscode.extensions.getExtension('vscode.git')
     const git = gitExtension?.exports
     const api = git.getAPI(1);
-    const repo = api.repositories[0];
     if (val == "branch") {
+        const repo = api.repositories[id];
         const branch  = await repo.getBranches("origin");
         return branch
     } else if (val == "push"){
+        const repo = api.repositories[id];
         await repo.push("origin", `HEAD:refs/for/${push_branch}`)
+    } else if (val == "repos"){
+        const repo = api.repositories;
+        return repo
     }
 }
 
 async function qp() {
-    const branchRaw = await gitAPI("branch")
+    const repoRaw = await gitAPI("repos")
+    const repos: any = [];
+    repoRaw.forEach((value: any, index: number) => {
+        repos.push({id: index, label: value['rootUri']['path']})
+      }); 
+    const repo_id: any = await showRepoQuickPick(repos)
+    console.log(repo_id)
+    
+    const branchRaw = await gitAPI("branch", "", repo_id['id'])
     const branch: string[] = [];
     branchRaw.forEach(function (value: any) {
         branch.push(value['name'])
@@ -22,11 +34,18 @@ async function qp() {
     const code = await getCode(branch)
 }
 
+async function showRepoQuickPick(val: any) {
+	const result = await vscode.window.showQuickPick(val, {
+		placeHolder: 'Select your workdir',
+	});
+   return result
+}
+
 
 function getCode(codes: any) {
     return new Promise((resolve) => {
       const quickPick = vscode.window.createQuickPick()
-      quickPick.placeholder = 'Select (or create) a code.'
+      quickPick.placeholder = 'Select (or create) HEAD:refs/for/<branch>'
       quickPick.canSelectMany = false
       quickPick.items = codes.map((label: any) => ({ label }))
       quickPick.onDidAccept(async () => {
