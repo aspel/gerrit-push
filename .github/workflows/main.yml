@@ -1,24 +1,13 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
-
-# Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
   push:
     branches: [ main ]
+  pull_request:
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    if: github.ref != 'refs/heads/master'
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -26,7 +15,8 @@ jobs:
         with:
           node-version: '14'
           check-latest: true
+      - run: git config --global user.email "lip@lip.net.ua"
+      - run: git config --global user.name "aspel"
       - run: npm version patch -m "Upgrade to [%s]"
-      - run: npm install vsce
+      - run: npm install -g vsce
       - run: vsce package
-      - run: vsce publish
