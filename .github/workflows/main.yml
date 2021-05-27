@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.ref != 'refs/heads/master'
+    if: github.ref != 'refs/heads/main'
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -21,3 +21,21 @@ jobs:
       - run: npm install
       - run: npm install -g vsce
       - run: vsce package
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          check-latest: true
+      - run: git config --global user.email "lip@lip.net.ua"
+      - run: git config --global user.name "aspel"
+      - run: npm version patch -m "Upgrade to [%s]"
+      - run: npm install
+      - run: npm install -g vsce
+      - run: vsce package
+      - run: vsce publish -p ${{ secrets.VS_TOKEN }}" 
+      - run: git push
