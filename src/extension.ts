@@ -31,7 +31,7 @@ async function qp() {
     branchRaw.forEach(function (value: any) {
         branch.push(value['name'])
       }); 
-    const code = await getCode(branch)
+    const code = await getCode(branch, repo_id['id'])
 }
 
 async function showRepoQuickPick(val: any) {
@@ -42,7 +42,7 @@ async function showRepoQuickPick(val: any) {
 }
 
 
-function getCode(codes: any) {
+function getCode(codes: any, id: any) {
     return new Promise((resolve) => {
       const quickPick = vscode.window.createQuickPick()
       quickPick.placeholder = 'Select (or create) HEAD:refs/for/<branch>'
@@ -51,7 +51,7 @@ function getCode(codes: any) {
       quickPick.onDidAccept(async () => {
         const selection = quickPick.activeItems[0]
         resolve(selection.label)
-        await gitAPI("push", selection.label)
+        await gitAPI("push", selection.label, id)
         vscode.window.showInformationMessage(`Commit pushed to HEAD:refs/for/${selection.label}`);
         quickPick.hide()
       })
