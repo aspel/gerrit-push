@@ -1,5 +1,22 @@
 import * as vscode from 'vscode';
 
+async function mainGerrit() {
+    const repoRaw = await gitAPI("repos")
+    const repos: any = [];
+    repoRaw.forEach((value: any, index: number) => {
+        repos.push({id: index, label: value['rootUri']['path']})
+      }); 
+    const repo_id: any = await showRepoQuickPick(repos)
+    console.log(repo_id)
+    
+    const branchRaw = await gitAPI("branch", "", repo_id['id'])
+    const branch: string[] = [];
+    branchRaw.forEach(function (value: any) {
+        branch.push(value['name'])
+      }); 
+    showBranchQuickPick(branch, repo_id['id'])
+}
+
 async function gitAPI(val: string, push_branch: string = "", id: number = 0) {
     const gitExtension = vscode.extensions.getExtension('vscode.git')
     const git = gitExtension?.exports
@@ -17,23 +34,6 @@ async function gitAPI(val: string, push_branch: string = "", id: number = 0) {
     }
 }
 
-async function qp() {
-    const repoRaw = await gitAPI("repos")
-    const repos: any = [];
-    repoRaw.forEach((value: any, index: number) => {
-        repos.push({id: index, label: value['rootUri']['path']})
-      }); 
-    const repo_id: any = await showRepoQuickPick(repos)
-    console.log(repo_id)
-    
-    const branchRaw = await gitAPI("branch", "", repo_id['id'])
-    const branch: string[] = [];
-    branchRaw.forEach(function (value: any) {
-        branch.push(value['name'])
-      }); 
-    const code = await getCode(branch, repo_id['id'])
-}
-
 async function showRepoQuickPick(val: any) {
 	const result = await vscode.window.showQuickPick(val, {
 		placeHolder: 'Select your workdir',
@@ -41,17 +41,16 @@ async function showRepoQuickPick(val: any) {
    return result
 }
 
-
-function getCode(codes: any, id: any) {
+function showBranchQuickPick(codes: any, id: any) {
     return new Promise((resolve) => {
       const quickPick = vscode.window.createQuickPick()
       quickPick.placeholder = 'Select (or create) HEAD:refs/for/<branch>'
       quickPick.canSelectMany = false
       quickPick.items = codes.map((label: any) => ({ label }))
-      quickPick.onDidAccept(async () => {
+      quickPick.onDidAccept(() => {
         const selection = quickPick.activeItems[0]
         resolve(selection.label)
-        await gitAPI("push", selection.label, id)
+        gitAPI("push", selection.label, id)
         vscode.window.showInformationMessage(`Commit pushed to HEAD:refs/for/${selection.label}`);
         quickPick.hide()
       })
@@ -66,10 +65,9 @@ function getCode(codes: any, id: any) {
       quickPick.show()
     })
   }
-  
 
 export function activate(context: vscode.ExtensionContext) {
-    let disposable = vscode.commands.registerCommand('gerrit.push', qp);
+    let disposable = vscode.commands.registerCommand('gerrit.push', mainGerrit);
     context.subscriptions.push(disposable);
 }
 export function deactivate() {}
