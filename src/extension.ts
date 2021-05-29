@@ -51,7 +51,6 @@ function showBranchQuickPick(codes: any, id: any) {
         const selection = quickPick.activeItems[0]
         resolve(selection.label)
         gitAPI("push", selection.label, id)
-        vscode.window.showInformationMessage(`Commit pushed to HEAD:refs/for/${selection.label}`);
         quickPick.hide()
       })
       quickPick.onDidChangeValue(() => {
