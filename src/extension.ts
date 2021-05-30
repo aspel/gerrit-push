@@ -1,10 +1,15 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 async function mainGerrit() {
   const repoRaw = await gitAPI("repos")
   const repos: any = [];
   repoRaw.forEach((value: any, index: number) => {
-    repos.push({ id: index, label: value['rootUri']['path'] })
+    const r_name = path.basename(value._repository.root);
+    const r_desc = [value._repository.headLabel, value._repository.syncLabel]
+    .filter(l => !!l)
+    .join(' ');
+    repos.push({ id: index, label: r_name, description: r_desc })
   });
   const repo_id: any = await showRepoQuickPick(repos)
 
@@ -32,6 +37,7 @@ async function gitAPI(val: string, push_branch: string = "", id: number = 0) {
       })
   } else if (val == "repos") {
     const repo = api.repositories;
+    console.log(repo)
     return repo
   }
 }
