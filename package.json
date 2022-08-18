@@ -8,7 +8,7 @@
     "url": "https://github.com/aspel/gerrit-push.git"
   },
   "license": "MIT",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "engines": {
     "vscode": "^1.70.0"
   },
