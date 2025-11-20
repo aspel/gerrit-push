@@ -5,8 +5,8 @@ async function mainGerrit() {
   const repoRaw = await gitAPI("repos")
   const repos: any = [];
   repoRaw.forEach((value: any, index: number) => {
-    const r_name = path.basename(value.repository.root);
-    const r_desc = [value.repository.headLabel, value.repository.syncLabel]
+    const r_name = path.basename(value.rootUri.fsPath);
+    const r_desc = [value.state?.HEAD?.name, value.state?.remotes?.map((r: any) => r.name).join(', ')]
     .filter(l => !!l)
     .join(' ');
     repos.push({ id: index, label: r_name, description: r_desc })
